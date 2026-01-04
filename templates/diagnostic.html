@@ -1,0 +1,321 @@
+{% extends "layout.html" %}
+{% block title %}Clinical Intelligence Center{% endblock %}
+{% block content %}
+
+<style>
+    :root {
+        --glass-bg: rgba(30, 41, 59, 0.7); 
+        --input-bg: rgba(15, 23, 42, 0.6);
+        --primary-pastel: #ffadad;
+        --accent-blue: #60a5fa;
+        --text-light-main: #f1f5f9;
+        --text-light-muted: #94a3b8;
+    }
+
+    body {
+        background-color: #0b0f1a;
+    }
+
+    /* Gradient Title to match layout theme */
+    .hero-title-diagnostic {
+        font-size: 3.5rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #fff 30%, var(--accent-blue) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        filter: drop-shadow(0 0 15px rgba(96, 165, 250, 0.2));
+        margin-bottom: 1rem;
+    }
+
+    .glass-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 30px;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+        width: 100%;
+        margin-top: 20px;
+    }
+
+    .section-label {
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: var(--accent-blue);
+        font-size: 0.85rem;
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+    }
+
+    .section-label::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: rgba(255, 255, 255, 0.1);
+        margin-left: 15px;
+    }
+
+    /* Theme Consistent Input Colors */
+    .form-label { 
+        color: var(--text-light-main) !important; 
+        font-weight: 600;
+    }
+
+    .text-muted-theme {
+        color: var(--text-light-muted) !important;
+    }
+
+    .form-control, .form-select {
+        background-color: var(--input-bg) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        color: white !important;
+        border-radius: 12px;
+        padding: 12px 15px;
+    }
+
+    .form-control::placeholder {
+        color: rgba(255, 255, 255, 0.3) !important;
+    }
+
+    .input-group-custom {
+        display: flex;
+            flex-direction: column;
+            gap: 15px;
+        padding: 25px;
+        border-radius: 20px;
+        background: rgba(15, 23, 42, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        transition: all 0.3s ease;
+    }
+
+    .btn-ai {
+        background: var(--primary-pastel);
+        color: #0b0f1a;
+        padding: 18px 45px;
+        border-radius: 50px;
+        font-weight: 800;
+        letter-spacing: 1px;
+        border: none;
+        box-shadow: 0 0 20px rgba(255, 173, 173, 0.3);
+    }
+
+    .live-metric {
+        font-size: 0.85rem;
+        color: var(--accent-blue);
+        background: rgba(96, 165, 250, 0.1);
+        padding: 8px 15px;
+        border-radius: 10px;
+        border: 1px solid rgba(96, 165, 250, 0.2);
+    }
+
+    #loadingOverlay {
+        display: none;
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(11, 15, 26, 0.95);
+        z-index: 100;
+        border-radius: 30px;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .result-card-inner {
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+    }
+</style>
+
+<div class="text-center animate__animated animate__fadeIn mb-4">
+    <span class="badge rounded-pill mb-3 px-3 py-2" style="background: rgba(230, 57, 70, 0.1); color: var(--primary-pastel); border: 1px solid rgba(230, 57, 70, 0.2);">
+        <span class="heartbeat-icon" style="animation: heartbeat 1.5s infinite;">❤️</span> Live AI Engine Active
+    </span>
+    <h1 class="hero-title-diagnostic">Diagnostic Center</h1>
+    <p class="lead text-muted-theme">Enter clinical markers for real-time cardiovascular risk profiling.</p>
+</div>
+
+<div class="container-fluid px-md-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-12">
+            <div class="glass-card p-4 p-md-5 animate__animated animate__fadeInUp">
+                
+                <div id="loadingOverlay">
+                    <div class="spinner-grow text-danger mb-4" style="width: 3rem; height: 3rem;" role="status"></div>
+                    <h4 class="text-white">Neural Engine Computing...</h4>
+                    <p class="text-muted-theme">Analyzing systemic correlations.</p>
+                </div>
+
+                <form id="cardioForm">
+                    <div class="row g-5">
+                        <div class="col-md-4">
+                            <div class="section-label">Physical Profile</div>
+                            <div class="mb-4">
+                                <label class="form-label">Patient Age <small class="text-muted-theme">(Years)</small></label>
+                                <input type="number" name="age" class="form-control form-control-lg" placeholder="45" required>
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label">Biological Gender</label>
+                                <select name="gender" class="form-select form-select-lg">
+                                    <option value="1">Male</option>
+                                    <option value="0">Female</option>
+                                </select>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-6">
+                                    <label class="form-label">Height <small class="text-muted-theme">(cm)</small></label>
+                                    <input type="number" name="height" id="heightInput" class="form-control" required>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Weight <small class="text-muted-theme">(kg)</small></label>
+                                    <input type="number" name="weight" id="weightInput" class="form-control" required>
+                                </div>
+                            </div>
+                            <div id="bmiPreview" class="live-metric mt-3">Enter biometrics to calculate BMI</div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="section-label">Clinical Vitals</div>
+                            <div class="mb-4">
+                                <label class="form-label">Systolic Pressure <small class="text-muted-theme">(ap_hi)</small></label>
+                                <input type="number" name="ap_hi" id="sbp" class="form-control form-control-lg" placeholder="120" required>
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label">Diastolic Pressure <small class="text-muted-theme">(ap_lo)</small></label>
+                                <input type="number" name="ap_lo" id="dbp" class="form-control form-control-lg" placeholder="80" required>
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label">Cholesterol Status</label>
+                                <select name="cholesterol" class="form-select">
+                                    <option value="1">Normal</option>
+                                    <option value="2">Above Normal</option>
+                                    <option value="3">Significantly High</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="section-label">Lifestyle Markers</div>
+                            <div class="input-group-custom mb-4">
+                                <label class="form-label d-block">Glucose (Sugar) Level</label>
+                                <select name="gluc" class="form-select border-0" style="background: transparent !important;">
+                                    <option value="1">Normal</option>
+                                    <option value="2">Above Normal</option>
+                                    <option value="3">High</option>
+                                </select>
+                            </div>
+                            <div class="input-group-custom mb-4">
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" name="smoke" value="1">
+                                    <label class="form-check-label fw-bold text-white">Tobacco Use</label>
+                                </div>
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" name="alco" value="1">
+                                    <label class="form-check-label fw-bold text-white">Regular Alcohol Intake</label>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="active" value="1" checked>
+                                    <label class="form-check-label fw-bold text-white">Active Lifestyle</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-5">
+                        <button type="submit" class="btn btn-ai shadow-lg px-5 py-3">
+                            RUN CLINICAL ASSESSMENT
+                        </button>
+                    </div>
+                </form>
+
+                <div id="resultBox" class="mt-5 pt-5 border-top border-secondary animate__animated animate__fadeIn" style="display:none;">
+                    <div class="row align-items-center g-4">
+                        <div class="col-md-6 text-center text-md-start">
+                            <h6 class="text-uppercase text-muted-theme ls-1">Assessment Outcome</h6>
+                            <h2 id="riskStatus" class="display-5 fw-bold mb-4"></h2>
+                            <p class="lead text-muted-theme">Classification based on n=68,550 clinical records.</p>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-4 result-card-inner">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="form-label mb-0">Risk Probability</span>
+                                    <span id="riskProb" class="fw-bold text-white">0%</span>
+                                </div>
+                                <div class="progress" style="height: 25px; border-radius: 50px; background: rgba(255,255,255,0.05);">
+                                    <div id="riskBar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"></div>
+                                </div>
+                                <div class="mt-4 row text-center">
+                                    <div class="col-6 border-end border-secondary">
+                                        <div class="small text-muted-theme">Calculated BMI</div>
+                                        <div id="resBmi" class="fw-bold text-white">--</div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="small text-muted-theme">System Accuracy</div>
+                                        <div class="fw-bold text-info">72.06%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // BMI Logic
+    const updateBmi = () => {
+        const h = document.getElementById('heightInput').value / 100;
+        const w = document.getElementById('weightInput').value;
+        if(h > 0 && w > 0) {
+            const bmi = (w / (h * h)).toFixed(1);
+            document.getElementById('bmiPreview').innerText = `Current BMI: ${bmi} kg/m²`;
+        }
+    };
+    document.getElementById('heightInput').addEventListener('input', updateBmi);
+    document.getElementById('weightInput').addEventListener('input', updateBmi);
+
+    document.getElementById('cardioForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const overlay = document.getElementById('loadingOverlay');
+        overlay.style.display = 'flex';
+        
+        const formData = new FormData(e.target);
+        if(!formData.has('active')) formData.append('active', '0');
+
+        try {
+            const response = await fetch('/predict', { method: 'POST', body: formData });
+            const data = await response.json();
+
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                const box = document.getElementById('resultBox');
+                const status = document.getElementById('riskStatus');
+                const bar = document.getElementById('riskBar');
+                
+                box.style.display = 'block';
+                document.getElementById('resBmi').innerText = data.bmi;
+                document.getElementById('riskProb').innerText = data.prob + '%';
+                
+                if(data.result === 1) {
+                    status.innerHTML = "🔴 High Risk Pattern";
+                    status.className = "text-danger fw-bold display-5 animate__animated animate__shakeX";
+                    bar.style.backgroundColor = "#ff8b8b";
+                } else {
+                    status.innerHTML = "🟢 Low Risk Profile";
+                    status.className = "text-info fw-bold display-5 animate__animated animate__pulse";
+                    bar.style.backgroundColor = "#60a5fa";
+                }
+                bar.style.width = data.prob + "%";
+                window.scrollTo({ top: box.offsetTop - 50, behavior: 'smooth' });
+            }, 800);
+        } catch (err) {
+            overlay.style.display = 'none';
+            alert("Model Connection Error.");
+        }
+    };
+</script>
+{% endblock %}

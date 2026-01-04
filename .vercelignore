@@ -1,0 +1,13 @@
+# Training Data and Notebooks
+data/
+*.csv
+*.ipynb
+.ipynb_checkpoints/
+
+# Development Environment
+venv/
+.git/
+__pycache__/
+
+# Documentation
+README.md
